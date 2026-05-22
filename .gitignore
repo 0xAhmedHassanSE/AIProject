@@ -1,0 +1,17 @@
+**/__pycache__/
+venv/
+.env
+*.pyc
+*.pdf
+
+# IDEs
+.idea/
+.vscode/
+
+# Generated Output Files
+*.png
+*.csv
+outputs/
+
+# Archives
+*.zip

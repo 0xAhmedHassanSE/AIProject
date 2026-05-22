@@ -359,11 +359,12 @@ def plot_training_dashboard(
 
     fig.suptitle(
         "Maze RL Solver — Q-Learning Training Dashboard",
-        fontsize=16, fontweight="bold", y=1.01
+        fontsize=16, fontweight="bold", y=0.96
     )
+    fig.subplots_adjust(top=0.90)
 
     if save_path:
-        fig.savefig(save_path, dpi=FIGURE_DPI, bbox_inches="tight")
+        fig.savefig(save_path, dpi=FIGURE_DPI)
         print(f"  [Saved] {save_path}")
 
     return fig

@@ -54,6 +54,7 @@ class TrainingMetrics:
     episode_success:     List[bool]  = field(default_factory=list)
     epsilon_per_episode: List[float] = field(default_factory=list)
     td_errors_mean:      List[float] = field(default_factory=list)
+    sample_paths:        dict        = field(default_factory=dict)
     training_time_sec:   float       = 0.0
 
     # ── Derived properties ──────────────────────────────────────────────────
@@ -131,6 +132,7 @@ class TrainingLoop:
         n_episodes:   int = 3000,
         log_interval: int = 200,
         verbose:      bool = True,
+        **kwargs
     ):
         """
         Parameters
@@ -157,6 +159,7 @@ class TrainingLoop:
         """
         metrics    = TrainingMetrics()
         start_time = time.time()
+        best_successful_steps = float('inf')
 
         if self.verbose:
             print(f"\n{'='*60}")
@@ -176,6 +179,7 @@ class TrainingLoop:
             total_abs_tde = 0.0   # accumulated |TD error| for this episode
             n_steps       = 0
             success       = False
+            current_path  = [self.env.state_to_pos(state)]
 
             # ── Episode Loop ────────────────────────────────────────────────
             while True:
@@ -200,6 +204,7 @@ class TrainingLoop:
                 total_abs_tde += abs(td_error)
                 n_steps       += 1
                 state          = next_state
+                current_path.append(self.env.state_to_pos(state))
 
                 # 5. Check episode end conditions
                 if terminated:
@@ -220,6 +225,13 @@ class TrainingLoop:
             metrics.td_errors_mean.append(
                 total_abs_tde / n_steps if n_steps > 0 else 0.0
             )
+            
+            # Save paths for milestones (Record every improvement!)
+            if episode == 1:
+                metrics.sample_paths[episode] = current_path
+            elif success and n_steps < best_successful_steps:
+                best_successful_steps = n_steps
+                metrics.sample_paths[episode] = current_path
 
             # ── Periodic Logging ────────────────────────────────────────────
             if self.verbose and episode % self.log_interval == 0:
